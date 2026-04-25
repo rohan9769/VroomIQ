@@ -16,3 +16,4 @@ frontend/cli/dist/
 
 # OS
 .DS_Store
+.venv
