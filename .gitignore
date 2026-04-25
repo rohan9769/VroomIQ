@@ -1,0 +1,18 @@
+# Environment
+.env
+
+# Python
+backend/.venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/qdrant_data/
+*.pyc
+
+# Node
+frontend/web/node_modules/
+frontend/cli/node_modules/
+frontend/web/dist/
+frontend/cli/dist/
+
+# OS
+.DS_Store

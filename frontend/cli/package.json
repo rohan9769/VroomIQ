@@ -1,0 +1,22 @@
+{
+  "name": "carshopping-cli",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": "./dist/app.js",
+  "scripts": {
+    "dev": "node --import tsx/esm src/app.tsx",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "ink": "^5.1.0",
+    "ink-text-input": "^6.0.0",
+    "react": "^19.0.0",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/node": "^22.0.0",
+    "typescript": "~5.7.2",
+    "tsx": "^4.19.0"
+  }
+}
