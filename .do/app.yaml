@@ -1,0 +1,38 @@
+name: carshopping-ai
+region: nyc
+
+services:
+  - name: backend
+    source_dir: /backend
+    dockerfile_path: /backend/Dockerfile
+    http_port: 8000
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    envs:
+      - key: ANTHROPIC_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+        value: REPLACE_ME
+      - key: QDRANT_URL
+        scope: RUN_TIME
+        value: REPLACE_ME
+      - key: QDRANT_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+        value: REPLACE_ME
+      - key: ALLOWED_ORIGINS
+        scope: RUN_TIME
+        value: ${APP_URL}
+    routes:
+      - path: /api
+      - path: /health
+
+static_sites:
+  - name: frontend
+    source_dir: /frontend/web
+    build_command: npm run build
+    output_dir: dist
+    routes:
+      - path: /
+    index_document: index.html
+    error_document: index.html
