@@ -41,6 +41,49 @@ export default function App() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
+  // Typewriter effect — buffer incoming text, drain to display at a fixed rate
+  const assistantTextRef = useRef("");
+  const typedLengthRef = useRef(0);
+  const rafRef = useRef<number | null>(null);
+
+  const scheduleTypewriter = () => {
+    const tick = () => {
+      const target = assistantTextRef.current.length;
+      const current = typedLengthRef.current;
+      if (current < target) {
+        const next = Math.min(current + 3, target);
+        typedLengthRef.current = next;
+        setDisplay((d) => {
+          const copy = [...d];
+          const last = copy[copy.length - 1];
+          if (last?.role === "assistant") {
+            copy[copy.length - 1] = { ...last, content: assistantTextRef.current.slice(0, next) };
+          }
+          return copy;
+        });
+        rafRef.current = requestAnimationFrame(tick);
+      } else {
+        rafRef.current = null;
+      }
+    };
+    rafRef.current = requestAnimationFrame(tick);
+  };
+
+  const flushTypewriter = () => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    setDisplay((d) => {
+      const copy = [...d];
+      const last = copy[copy.length - 1];
+      if (last?.role === "assistant") {
+        copy[copy.length - 1] = { ...last, content: assistantTextRef.current };
+      }
+      return copy;
+    });
+  };
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [display]);
@@ -57,7 +100,8 @@ export default function App() {
     setInput("");
     setLoading(true);
 
-    let assistantText = "";
+    assistantTextRef.current = "";
+    typedLengthRef.current = 0;
     let pendingCars: Car[] | null = null;
     setDisplay((d) => [...d, { role: "assistant", content: "" }]);
 
@@ -69,12 +113,8 @@ export default function App() {
         result?: { cars?: unknown[] };
       }>) {
         if (event.type === "text" && event.content) {
-          assistantText += event.content;
-          setDisplay((d) => {
-            const copy = [...d];
-            copy[copy.length - 1] = { role: "assistant", content: assistantText };
-            return copy;
-          });
+          assistantTextRef.current += event.content;
+          if (!rafRef.current) scheduleTypewriter();
         } else if (event.type === "tool_start" && event.tool) {
           setDisplay((d) => [
             ...d,
@@ -92,7 +132,8 @@ export default function App() {
         }
       }
 
-      setMessages((m) => [...m, { role: "assistant", content: assistantText }]);
+      flushTypewriter();
+      setMessages((m) => [...m, { role: "assistant", content: assistantTextRef.current }]);
 
       // Add cars to display AFTER text finishes streaming.
       // Only show a new card grid if at least one car is new — if Claude is just
