@@ -18,7 +18,7 @@ export default function CarGrid({ cars, selectedIds, onSelect, title }: Props) {
           {title}
         </h2>
       )}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
         {cars.map((car) => (
           <CarCard
             key={car.id}
