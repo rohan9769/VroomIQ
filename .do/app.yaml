@@ -29,7 +29,9 @@ services:
         value: ${APP_URL}
     routes:
       - path: /api
+        preserve_path_prefix: true
       - path: /health
+        preserve_path_prefix: true
 
 static_sites:
   - name: frontend
