@@ -42,8 +42,11 @@ def car_to_document(car: dict) -> str:
 
 
 def seed():
-    cars_path = Path(__file__).parent / "cars.json"
-    cars = json.loads(cars_path.read_text())
+    data_dir = Path(__file__).parent
+    cars = json.loads((data_dir / "cars.json").read_text())
+    batch2_path = data_dir / "cars_batch2.json"
+    if batch2_path.exists():
+        cars += json.loads(batch2_path.read_text())
 
     if QDRANT_URL:
         client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY or None)
