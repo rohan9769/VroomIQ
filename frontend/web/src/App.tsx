@@ -23,9 +23,10 @@ const TOOL_LABELS: Record<string, string> = {
 };
 
 interface DisplayMessage {
-  role: "user" | "assistant" | "tool";
+  role: "user" | "assistant" | "tool" | "cars";
   content: string;
   toolName?: string;
+  cars?: Car[];
 }
 
 export default function App() {
@@ -33,7 +34,8 @@ export default function App() {
   const [display, setDisplay] = useState<DisplayMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [cars, setCars] = useState<Car[]>([]);
+  // Accumulates all cars ever shown — so selection works across multiple queries
+  const [allCars, setAllCars] = useState<Map<string, Car>>(new Map());
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showComparison, setShowComparison] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -41,7 +43,7 @@ export default function App() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [display, cars]);
+  }, [display]);
 
   const send = async (text?: string) => {
     const msg = (text ?? input).trim();
@@ -91,7 +93,17 @@ export default function App() {
       }
 
       setMessages((m) => [...m, { role: "assistant", content: assistantText }]);
-      if (pendingCars) setCars(pendingCars);
+
+      // Add cars to display AFTER text finishes streaming
+      if (pendingCars) {
+        const batch = pendingCars;
+        setAllCars((prev) => {
+          const next = new Map(prev);
+          batch.forEach((c) => next.set(c.id, c));
+          return next;
+        });
+        setDisplay((d) => [...d, { role: "cars", content: "", cars: batch }]);
+      }
     } catch {
       setDisplay((d) => {
         const copy = [...d];
@@ -123,7 +135,7 @@ export default function App() {
     });
   };
 
-  const selectedCars = cars.filter((c) => selectedIds.has(c.id));
+  const selectedCars = [...allCars.values()].filter((c) => selectedIds.has(c.id));
   const hasConversation = display.length > 0;
 
   return (
@@ -192,67 +204,69 @@ export default function App() {
             </div>
           </div>
         ) : (
-          <>
-            {/* Messages — centered narrow column */}
-            <div className="max-w-2xl mx-auto px-4 pt-6 pb-4 space-y-4">
-              {display.map((msg, i) => {
-                if (msg.role === "tool") {
-                  return (
-                    <div key={i} className="flex items-center gap-2 text-xs text-blue-400 px-1">
-                      <Wrench size={12} className="animate-pulse" />
-                      {msg.content}
-                    </div>
-                  );
-                }
-                if (msg.role === "user") {
-                  return (
-                    <div key={i} className="flex justify-end">
-                      <div className="max-w-[80%] bg-blue-600 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm">
-                        {msg.content}
-                      </div>
-                    </div>
-                  );
-                }
+          <div className="max-w-5xl mx-auto px-4 pt-6 pb-4 space-y-4">
+            {display.map((msg, i) => {
+              // Car results — full container width, inline in conversation
+              if (msg.role === "cars" && msg.cars) {
                 return (
-                  <div key={i} className="flex justify-start">
-                    <div className="max-w-[90%] bg-gray-800 rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm text-gray-100 prose prose-invert prose-sm">
-                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  <div key={i} className="border-t border-gray-800 pt-4 pb-2">
+                    {selectedIds.size > 0 && (
+                      <p className="text-xs text-gray-500 mb-3 max-w-2xl">
+                        {selectedIds.size} car{selectedIds.size > 1 ? "s" : ""} selected — click to
+                        deselect, or select 2+ to compare.
+                      </p>
+                    )}
+                    <CarGrid
+                      cars={msg.cars}
+                      selectedIds={selectedIds}
+                      onSelect={handleCarSelect}
+                      title={`${msg.cars.length} result${msg.cars.length !== 1 ? "s" : ""}`}
+                    />
+                  </div>
+                );
+              }
+
+              // Tool indicator
+              if (msg.role === "tool") {
+                return (
+                  <div key={i} className="max-w-2xl mx-auto w-full flex items-center gap-2 text-xs text-blue-400 px-1">
+                    <Wrench size={12} className="animate-pulse" />
+                    {msg.content}
+                  </div>
+                );
+              }
+
+              // User bubble
+              if (msg.role === "user") {
+                return (
+                  <div key={i} className="max-w-2xl mx-auto w-full flex justify-end">
+                    <div className="max-w-[80%] bg-blue-600 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm">
+                      {msg.content}
                     </div>
                   </div>
                 );
-              })}
+              }
 
-              {loading && !display[display.length - 1]?.content && (
-                <div className="flex justify-start">
-                  <div className="bg-gray-800 rounded-2xl rounded-tl-sm px-4 py-3">
-                    <Loader2 size={16} className="animate-spin text-gray-400" />
+              // Assistant bubble
+              return (
+                <div key={i} className="max-w-2xl mx-auto w-full flex justify-start">
+                  <div className="max-w-[90%] bg-gray-800 rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm text-gray-100 prose prose-invert prose-sm">
+                    <ReactMarkdown>{msg.content}</ReactMarkdown>
                   </div>
                 </div>
-              )}
-            </div>
+              );
+            })}
 
-            {/* Car results — wider, below conversation */}
-            {cars.length > 0 && (
-              <div className="max-w-5xl mx-auto px-4 pb-8">
-                <div className="border-t border-gray-800 pt-6">
-                  {selectedIds.size > 0 && (
-                    <p className="text-xs text-gray-500 mb-4">
-                      {selectedIds.size} car{selectedIds.size > 1 ? "s" : ""} selected — click to
-                      deselect, or select 2+ to compare.
-                    </p>
-                  )}
-                  <CarGrid
-                    cars={cars}
-                    selectedIds={selectedIds}
-                    onSelect={handleCarSelect}
-                    title={`${cars.length} result${cars.length !== 1 ? "s" : ""}`}
-                  />
+            {loading && !display[display.length - 1]?.content && (
+              <div className="max-w-2xl mx-auto w-full flex justify-start">
+                <div className="bg-gray-800 rounded-2xl rounded-tl-sm px-4 py-3">
+                  <Loader2 size={16} className="animate-spin text-gray-400" />
                 </div>
               </div>
             )}
 
             <div ref={bottomRef} />
-          </>
+          </div>
         )}
       </div>
 
