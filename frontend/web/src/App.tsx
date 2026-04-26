@@ -56,6 +56,7 @@ export default function App() {
     setLoading(true);
 
     let assistantText = "";
+    let pendingCars: Car[] | null = null;
     setDisplay((d) => [...d, { role: "assistant", content: "" }]);
 
     try {
@@ -84,12 +85,13 @@ export default function App() {
         } else if (event.type === "tool_result") {
           const found = (event.result as { cars?: unknown[] })?.cars;
           if (found && found.length > 0) {
-            setCars(found as Car[]);
+            pendingCars = found as Car[];
           }
         }
       }
 
       setMessages((m) => [...m, { role: "assistant", content: assistantText }]);
+      if (pendingCars) setCars(pendingCars);
     } catch {
       setDisplay((d) => {
         const copy = [...d];
