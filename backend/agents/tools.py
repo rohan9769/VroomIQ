@@ -4,6 +4,7 @@ Each tool maps directly to a retriever call or a pure-Python calculation.
 """
 import json
 from rag.retriever import CarRetriever
+from config import TAVILY_API_KEY
 
 _retriever: CarRetriever | None = None
 
@@ -106,6 +107,25 @@ TOOLS = [
                 }
             },
             "required": ["budget", "use_case"]
+        }
+    },
+    {
+        "name": "search_web",
+        "description": (
+            "Search the internet for up-to-date car information not in the database — "
+            "such as full trim lineups, current pricing, recent reviews, recalls, or "
+            "any question the database cannot answer. Always prefer database tools first; "
+            "use this only when the user asks about details outside the database."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Search query, e.g. '2024 Honda CR-V all trim levels and prices'"
+                }
+            },
+            "required": ["query"]
         }
     },
     {
@@ -227,12 +247,33 @@ def handle_calculate_financing(args: dict) -> dict:
     }
 
 
+async def handle_search_web(args: dict) -> dict:
+    if not TAVILY_API_KEY:
+        return {"error": "TAVILY_API_KEY not configured"}
+    from tavily import TavilyClient
+    client = TavilyClient(api_key=TAVILY_API_KEY)
+    response = client.search(
+        query=args["query"],
+        search_depth="basic",
+        max_results=5,
+        include_answer=True,
+    )
+    return {
+        "answer": response.get("answer", ""),
+        "sources": [
+            {"title": r.get("title", ""), "url": r.get("url", ""), "content": r.get("content", "")}
+            for r in response.get("results", [])
+        ],
+    }
+
+
 async def dispatch_tool(name: str, args: dict) -> str:
     handlers = {
         "search_cars": handle_search_cars,
         "compare_cars": handle_compare_cars,
         "get_recommendation": handle_get_recommendation,
         "calculate_financing": handle_calculate_financing,
+        "search_web": handle_search_web,
     }
     handler = handlers.get(name)
     if not handler:

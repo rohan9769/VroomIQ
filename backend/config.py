@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 ANTHROPIC_API_KEY = os.environ["ANTHROPIC_API_KEY"]
+TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "")
 
 # Remote Qdrant (Qdrant Cloud) — set both to use cloud
 QDRANT_URL = os.getenv("QDRANT_URL", "")

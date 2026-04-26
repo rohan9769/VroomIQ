@@ -27,6 +27,10 @@ services:
       - key: ALLOWED_ORIGINS
         scope: RUN_TIME
         value: ${APP_URL}
+      - key: TAVILY_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+        value: REPLACE_ME
     routes:
       - path: /api
         preserve_path_prefix: true
