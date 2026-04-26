@@ -46,7 +46,7 @@ export default function App() {
         <div className="flex items-center gap-2.5">
           <CarIcon className="text-blue-400" size={22} />
           <span className="font-bold text-white text-lg tracking-tight">
-            CarShopping<span className="text-blue-400">AI</span>
+            Vroom<span className="text-blue-400">IQ</span>
           </span>
         </div>
 
@@ -68,6 +68,14 @@ export default function App() {
               Clear selection
             </button>
           )}
+          <a
+            href="https://www.linkedin.com/in/rsnayak21/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-gray-500 hover:text-blue-400 transition-colors border-l border-gray-700 pl-3"
+          >
+            Made by <span className="text-gray-300 hover:text-blue-400">Rohan Nayak</span>
+          </a>
         </div>
       </header>
 

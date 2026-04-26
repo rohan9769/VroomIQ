@@ -1,4 +1,4 @@
-# CarShopping AI
+# VroomIQ
 
 A multi-agent RAG-powered car shopping assistant. Ask in plain English — the AI searches a vector database, compares cars, generates personalized recommendations, and calculates financing in real time.
 
