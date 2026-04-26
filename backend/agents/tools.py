@@ -247,7 +247,7 @@ def handle_calculate_financing(args: dict) -> dict:
     }
 
 
-async def handle_search_web(args: dict) -> dict:
+def handle_search_web(args: dict) -> dict:
     if not TAVILY_API_KEY:
         return {"error": "TAVILY_API_KEY not configured"}
     from tavily import TavilyClient
