@@ -9,7 +9,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams, PointStruct, Document
+from qdrant_client.models import Distance, VectorParams, PointStruct, Document, PayloadSchemaType
 from config import QDRANT_URL, QDRANT_API_KEY, QDRANT_LOCAL_PATH, COLLECTION_NAME
 
 EMBED_MODEL = "BAAI/bge-small-en-v1.5"
@@ -74,6 +74,20 @@ def seed():
     ]
 
     client.upsert(collection_name=COLLECTION_NAME, points=points)
+
+    # Qdrant Cloud requires explicit indexes on fields used in filters
+    for field, schema in [
+        ("price",       PayloadSchemaType.INTEGER),
+        ("year",        PayloadSchemaType.INTEGER),
+        ("horsepower",  PayloadSchemaType.INTEGER),
+        ("body_type",   PayloadSchemaType.KEYWORD),
+        ("fuel_type",   PayloadSchemaType.KEYWORD),
+        ("make",        PayloadSchemaType.KEYWORD),
+        ("id",          PayloadSchemaType.KEYWORD),
+    ]:
+        client.create_payload_index(collection_name=COLLECTION_NAME, field_name=field, field_schema=schema)
+        print(f"  Indexed field: {field}")
+
     print(f"Done! {len(cars)} cars indexed in collection '{COLLECTION_NAME}'.")
 
 
