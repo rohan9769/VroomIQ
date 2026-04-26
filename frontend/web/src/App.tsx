@@ -94,7 +94,9 @@ export default function App() {
 
       setMessages((m) => [...m, { role: "assistant", content: assistantText }]);
 
-      // Add cars to display AFTER text finishes streaming
+      // Add cars to display AFTER text finishes streaming.
+      // Only show a new card grid if at least one car is new — if Claude is just
+      // fetching a previously-shown car to answer a follow-up question, skip the grid.
       if (pendingCars) {
         const batch = pendingCars;
         setAllCars((prev) => {
@@ -102,7 +104,10 @@ export default function App() {
           batch.forEach((c) => next.set(c.id, c));
           return next;
         });
-        setDisplay((d) => [...d, { role: "cars", content: "", cars: batch }]);
+        const hasNewCars = batch.some((c) => !allCars.has(c.id));
+        if (hasNewCars) {
+          setDisplay((d) => [...d, { role: "cars", content: "", cars: batch }]);
+        }
       }
     } catch {
       setDisplay((d) => {
