@@ -11,9 +11,9 @@ A multi-agent RAG-powered car shopping assistant. Ask in plain English — the A
 | Web App (local) | http://localhost:5173 |
 | API (local) | http://localhost:8000 |
 | API Docs (local) | http://localhost:8000/docs |
-| Web App (production) | https://carshopping-ai-lzjoy.ondigitalocean.app |
-| API (production) | https://carshopping-ai-lzjoy.ondigitalocean.app/api |
-| API Docs (production) | https://carshopping-ai-lzjoy.ondigitalocean.app/docs |
+| Web App (production) | https://vroomiq-viayx.ondigitalocean.app |
+| API (production) | https://vroomiq-viayx.ondigitalocean.app/api |
+| API Docs (production) | https://vroomiq-viayx.ondigitalocean.app/docs |
 
 ---
 
