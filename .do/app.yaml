@@ -3,6 +3,10 @@ region: nyc
 
 services:
   - name: backend
+    github:
+      repo: rohan9769/VroomIQ
+      branch: main
+      deploy_on_push: true
     source_dir: /backend
     dockerfile_path: /backend/Dockerfile
     http_port: 8000
@@ -29,6 +33,10 @@ services:
 
 static_sites:
   - name: frontend
+    github:
+      repo: rohan9769/VroomIQ
+      branch: main
+      deploy_on_push: true
     source_dir: /frontend/web
     build_command: npm run build
     output_dir: dist
